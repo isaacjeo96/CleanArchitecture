@@ -1,0 +1,8 @@
+{
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "files.autoGuessEncoding": true,
+  "window.autoDetectColorScheme": true,
+  "window.closeWhenEmpty": true,
+  "explorer.compactFolders": false
+}
