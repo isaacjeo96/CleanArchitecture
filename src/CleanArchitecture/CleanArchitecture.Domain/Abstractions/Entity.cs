@@ -15,7 +15,7 @@ namespace CleanArchitecture.Domain.Abstractions
     public abstract class Entity
     {
 
-        private readonly List<IDomainEvents> _domainEvents = new();
+        private readonly List<IDomainEvent> _domainEvents = new();
 
         /// <summary>
         /// Inicializa una nueva instancia de la clase <see cref="Entity"/> con el identificador especificado.
@@ -31,5 +31,22 @@ namespace CleanArchitecture.Domain.Abstractions
         /// Es de solo inicialización, garantizando su inmutabilidad después de la construcción.
         /// </summary>
         public Guid Id { get; init; }
+
+        public IReadOnlyList<IDomainEvent> GetDomainEvents()
+        {
+            return _domainEvents.ToList();
+        }
+
+        public void ClearDomainEvents()
+        {
+            _domainEvents.Clear();
+        }
+
+        protected void RaiseDomainEvent(IDomainEvent domainEvent)
+        {
+            _domainEvents.Add(domainEvent);
+        }
+
+
     }
 }

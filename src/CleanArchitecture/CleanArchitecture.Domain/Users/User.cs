@@ -1,4 +1,5 @@
 using CleanArchitecture.Domain.Abstractions;
+using CleanArchitecture.Domain.Users.Events;
 
 namespace CleanArchitecture.Domain.Users
 {
@@ -49,6 +50,7 @@ namespace CleanArchitecture.Domain.Users
         public static User Create(Nombre nombre, Apellido apellido, Email email)
         {
             var user = new User(Guid.NewGuid(), nombre, apellido, email);
+            user.RaiseDomainEvent(new UserCreatedDomainEvent(user.Id));
             return user;
         }
     }
