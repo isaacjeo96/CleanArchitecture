@@ -1,4 +1,5 @@
 using CleanArchitecture.Domain.Abstractions;
+using CleanArchitecture.Domain.Alquileres.Events;
 using CleanArchitecture.Domain.Vehiculos;
 
 namespace CleanArchitecture.Domain.Alquileres;
@@ -11,18 +12,8 @@ namespace CleanArchitecture.Domain.Alquileres;
 public sealed class Alquiler : Entity
 {
     /// <summary>
-    /// Constructor privado. Se debe utilizar un método de fábrica para crear instancias.
+    /// Constructor privado. Se debe utilizar un método de fábrica para crear instancias controladas del dominio.
     /// </summary>
-    /// <param name="id">Identificador único del alquiler.</param>
-    /// <param name="vehiculoId">ID del vehículo alquilado.</param>
-    /// <param name="userId">ID del usuario que realiza el alquiler.</param>
-    /// <param name="duracion">Rango de fechas que abarca el alquiler.</param>
-    /// <param name="precioPorPeriodo">Precio base por cada periodo de tiempo alquilado.</param>
-    /// <param name="mantenimiento">Costo adicional por mantenimiento del vehículo.</param>
-    /// <param name="accesorios">Costo adicional por accesorios añadidos al vehículo.</param>
-    /// <param name="precioTotal">Precio total del alquiler (suma de todos los conceptos).</param>
-    /// <param name="status">Estado actual del alquiler.</param>
-    /// <param name="fechaCreacion">Fecha en la que se creó el alquiler.</param>
     private Alquiler(
         Guid id,
         Guid vehiculoId,
@@ -111,4 +102,39 @@ public sealed class Alquiler : Entity
     /// Fecha en la que el alquiler fue cancelado.
     /// </summary>
     public DateTime? FechaCancelacion { get; private set; }
+
+    /// <summary>
+    /// Método de fábrica para crear un nuevo alquiler en estado reservado.
+    /// Aplica reglas del negocio inicial y dispara un evento de dominio.
+    /// </summary>
+    /// <param name="vehiculoId">Identificador del vehículo a alquilar.</param>
+    /// <param name="userId">Identificador del usuario que realiza la reserva.</param>
+    /// <param name="duracion">Periodo de duración del alquiler.</param>
+    /// <param name="fechaCreacion">Fecha de creación de la reserva.</param>
+    /// <param name="precioDetalle">Objeto con todos los componentes del precio.</param>
+    /// <returns>Una nueva instancia de <see cref="Alquiler"/> en estado reservado.</returns>
+    public static Alquiler Reservar(
+        Guid vehiculoId,
+        Guid userId,
+        DateRange duracion,
+        DateTime fechaCreacion,
+        PrecioDetalle precioDetalle)
+    {
+        var alquiler = new Alquiler(
+            Guid.NewGuid(),
+            vehiculoId,
+            userId,
+            duracion,
+            precioDetalle.PreicioPorPeriodo,
+            precioDetalle.Mantenimiento,
+            precioDetalle.Accesorios,
+            precioDetalle.PrecioTotal,
+            AlquilerStatus.Reservado,
+            fechaCreacion);
+
+        // Evento de dominio que indica que un nuevo alquiler ha sido reservado.
+        alquiler.RaiseDomainEvent(new AlquilerReservadoDomainEvent(alquiler.Id!));
+
+        return alquiler;
+    }
 }
