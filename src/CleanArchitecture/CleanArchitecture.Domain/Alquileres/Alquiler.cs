@@ -105,24 +105,30 @@ public sealed class Alquiler : Entity
 
     /// <summary>
     /// Método de fábrica para crear un nuevo alquiler en estado reservado.
-    /// Aplica reglas del negocio inicial y dispara un evento de dominio.
+    /// Calcula automáticamente los costos utilizando el <see cref="PrecioService"/> 
+    /// y dispara un evento de dominio que indica que el alquiler ha sido reservado.
+    /// Además, actualiza la fecha del último alquiler en el vehículo.
     /// </summary>
-    /// <param name="vehiculoId">Identificador del vehículo a alquilar.</param>
+    /// <param name="vehiculo">Vehículo que será alquilado.</param>
     /// <param name="userId">Identificador del usuario que realiza la reserva.</param>
     /// <param name="duracion">Periodo de duración del alquiler.</param>
     /// <param name="fechaCreacion">Fecha de creación de la reserva.</param>
-    /// <param name="precioDetalle">Objeto con todos los componentes del precio.</param>
+    /// <param name="precioService">Servicio del dominio para calcular los precios.</param>
     /// <returns>Una nueva instancia de <see cref="Alquiler"/> en estado reservado.</returns>
     public static Alquiler Reservar(
-        Guid vehiculoId,
+        Vehiculo vehiculo,
         Guid userId,
         DateRange duracion,
         DateTime fechaCreacion,
-        PrecioDetalle precioDetalle)
+        PrecioService precioService)
     {
+        // Calcula el precio detallado del alquiler utilizando el servicio de dominio.
+        var precioDetalle = precioService.CalcularPrecio(vehiculo, duracion);
+
+        // Crea una nueva instancia del alquiler.
         var alquiler = new Alquiler(
             Guid.NewGuid(),
-            vehiculoId,
+            vehiculo.Id,
             userId,
             duracion,
             precioDetalle.PreicioPorPeriodo,
@@ -132,8 +138,11 @@ public sealed class Alquiler : Entity
             AlquilerStatus.Reservado,
             fechaCreacion);
 
-        // Evento de dominio que indica que un nuevo alquiler ha sido reservado.
+        // Dispara evento de dominio para que otras partes del sistema reaccionen.
         alquiler.RaiseDomainEvent(new AlquilerReservadoDomainEvent(alquiler.Id!));
+
+        // Actualiza la fecha del último alquiler del vehículo.
+        vehiculo.FechaUltimaAlquiler = fechaCreacion;
 
         return alquiler;
     }

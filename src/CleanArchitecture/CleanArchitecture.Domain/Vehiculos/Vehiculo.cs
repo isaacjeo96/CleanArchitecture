@@ -67,8 +67,9 @@ namespace CleanArchitecture.Domain.Vehiculos
 
         /// <summary>
         /// Fecha en la que el vehículo fue alquilado por última vez.
+        /// Se modifico de private a internal
         /// </summary>
-        public DateTime? FechaUltimaAlquiler { get; private set; }
+        public DateTime? FechaUltimaAlquiler { get; internal set; }
 
         /// <summary>
         /// Lista de accesorios asociados al vehículo (e.g., GPS, asiento para niños).
