@@ -1,3 +1,4 @@
+using System.Xml.XPath;
 using CleanArchitecture.Domain.Abstractions;
 using CleanArchitecture.Domain.Alquileres.Events;
 using CleanArchitecture.Domain.Vehiculos;
@@ -146,4 +147,24 @@ public sealed class Alquiler : Entity
 
         return alquiler;
     }
+
+    /// <summary>
+    /// Confirma un alquiler previamente reservado, cambiando su estado a confirmado.
+    /// Solo se puede confirmar si el alquiler está actualmente en estado <see cref="AlquilerStatus.Reservado"/>.
+    /// </summary>
+    /// <param name="utcNow">
+    /// Fecha y hora actual en formato UTC, usada para registrar el momento de la confirmación.
+    /// </param>
+    /// <returns>
+    /// Un resultado (<see cref="Result"/>) indicando si la operación fue exitosa o si ocurrió un error (por ejemplo, al intentar confirmar un alquiler no reservado).
+    /// </returns>
+    public Result Confirmar(DateTime utcNow)
+    {
+        if (Status != AlquilerStatus.Reservado)
+        {
+            // Se va a disparar una excepción o un error porque el estado no permite confirmar.
+            // Solo puedo confirmar los que estén reservados.
+        }
+    }
+
 }
