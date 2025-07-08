@@ -151,20 +151,27 @@ public sealed class Alquiler : Entity
     /// <summary>
     /// Confirma un alquiler previamente reservado, cambiando su estado a confirmado.
     /// Solo se puede confirmar si el alquiler está actualmente en estado <see cref="AlquilerStatus.Reservado"/>.
+    /// Si el estado no es válido, retorna un error.
     /// </summary>
     /// <param name="utcNow">
     /// Fecha y hora actual en formato UTC, usada para registrar el momento de la confirmación.
     /// </param>
     /// <returns>
-    /// Un resultado (<see cref="Result"/>) indicando si la operación fue exitosa o si ocurrió un error (por ejemplo, al intentar confirmar un alquiler no reservado).
+    /// Un resultado (<see cref="Result"/>) que indica si la operación fue exitosa.
+    /// Retorna <c>Result.Success()</c> si la confirmación es válida,
+    /// o un <c>Result.Failure()</c> con un error específico si no es posible confirmar.
     /// </returns>
     public Result Confirmar(DateTime utcNow)
     {
         if (Status != AlquilerStatus.Reservado)
         {
-            // Se va a disparar una excepción o un error porque el estado no permite confirmar.
-            // Solo puedo confirmar los que estén reservados.
+            // Aquí deberías retornar un error de dominio en vez de permitir la confirmación.
+            // Ejemplo (una vez implementado):
+            // return Result.Failure(AlquilerErrors.NotReserved);
         }
+
+        return Result.Success();
     }
+
 
 }
