@@ -149,7 +149,7 @@ public sealed class Alquiler : Entity
     }
 
     /// <summary>
-    /// Confirma un alquiler previamente reservado, cambiando su estado a confirmado.
+    /// Confirma un alquiler previamente reservado, cambiando su estado a <see cref="AlquilerStatus.Confirmado"/>.
     /// Solo se puede confirmar si el alquiler está actualmente en estado <see cref="AlquilerStatus.Reservado"/>.
     /// Si el estado no es válido, retorna un error.
     /// </summary>
@@ -159,19 +159,89 @@ public sealed class Alquiler : Entity
     /// <returns>
     /// Un resultado (<see cref="Result"/>) que indica si la operación fue exitosa.
     /// Retorna <c>Result.Success()</c> si la confirmación es válida,
-    /// o un <c>Result.Failure()</c> con un error específico si no es posible confirmar.
+    /// o un <c>Result.Failure()</c> con <see cref="AlquilerErrors.NotReserved"/> si no es posible confirmar.
     /// </returns>
+
     public Result Confirmar(DateTime utcNow)
     {
         if (Status != AlquilerStatus.Reservado)
         {
-            // Aquí deberías retornar un error de dominio en vez de permitir la confirmación.
-            // Ejemplo (una vez implementado):
-            // return Result.Failure(AlquilerErrors.NotReserved);
+            return Result.Failure(AlquilerErrors.NotReserved);
         }
 
+        Status = AlquilerStatus.Confirmado;
+        FechaConfirmacion = utcNow;
+
+
+        RaiseDomainEvent(new AlquilerConfirmadoDomainEvent(Id));
         return Result.Success();
     }
 
+    /// <summary>
+    /// Rechaza un alquiler previamente reservado, cambiando su estado a <see cref="AlquilerStatus.Rechazado"/>.
+    /// Solo se puede rechazar si el alquiler está actualmente en estado <see cref="AlquilerStatus.Reservado"/>.
+    /// Si el estado no es válido, retorna un error.
+    /// </summary>
+    /// <param name="utcNow">
+    /// Fecha y hora actual en formato UTC, usada para registrar el momento del rechazo.
+    /// </param>
+    /// <returns>
+    /// Un resultado (<see cref="Result"/>) que indica si la operación fue exitosa.
+    /// Retorna <c>Result.Success()</c> si el rechazo es válido,
+    /// o un <c>Result.Failure()</c> con <see cref="AlquilerErrors.NotReserved"/> si no es posible rechazar.
+    /// </returns>
 
+    public Result Rechazar(DateTime utcNow)
+    {
+        if (Status != AlquilerStatus.Reservado)
+        {
+            return Result.Failure(AlquilerErrors.NotReserved);
+
+        }
+
+        Status = AlquilerStatus.Rechazado;
+        FechaDeNegacion = utcNow;
+        RaiseDomainEvent(new AlquilerRechazadoDomainEvent(Id));
+
+        return Result.Success();
+
+    }
+
+    /// <summary>
+    /// Cancela un alquiler previamente confirmado, cambiando su estado a <see cref="AlquilerStatus.Cancelado"/>.
+    /// Solo se puede cancelar si el alquiler está actualmente en estado <see cref="AlquilerStatus.Confirmado"/>
+    /// y la fecha actual es anterior al inicio del periodo de alquiler.
+    /// Si las condiciones no se cumplen, retorna un error.
+    /// </summary>
+    /// <param name="utcNow">
+    /// Fecha y hora actual en formato UTC, usada para registrar el momento de la cancelación.
+    /// </param>
+    /// <returns>
+    /// Un resultado (<see cref="Result"/>) que indica si la operación fue exitosa.
+    /// Retorna <c>Result.Success()</c> si la cancelación es válida,
+    /// o un <c>Result.Failure()</c> con <see cref="AlquilerErrors.NotConfirmed"/> o <see cref="AlquilerErrors.AlreadyStarted"/> si no es posible cancelar.
+    /// </returns>
+
+    public Result Cancelar(DateTime utcNow)
+    {
+        if (Status != AlquilerStatus.Confirmado)
+        {
+            return Result.Failure(AlquilerErrors.NotConfirmed);
+
+        }
+
+        var currentDate = DateOnly.FromDateTime(utcNow);
+
+        if (currentDate > Duracion.Inicio)
+        {
+            return Result.Failure(AlquilerErrors.AlreadyStarted);
+        }
+
+        Status = AlquilerStatus.Cancelado;
+        FechaCancelacion = utcNow;
+        RaiseDomainEvent(new AlquilerCanceladoDomainEvent(Id));
+
+        return Result.Success();
+
+    }
 }
