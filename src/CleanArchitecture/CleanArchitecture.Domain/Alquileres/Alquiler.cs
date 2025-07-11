@@ -232,7 +232,7 @@ public sealed class Alquiler : Entity
 
         var currentDate = DateOnly.FromDateTime(utcNow);
 
-        if (currentDate > Duracion.Inicio)
+        if (currentDate > Duracion!.Inicio)
         {
             return Result.Failure(AlquilerErrors.AlreadyStarted);
         }
@@ -240,6 +240,36 @@ public sealed class Alquiler : Entity
         Status = AlquilerStatus.Cancelado;
         FechaCancelacion = utcNow;
         RaiseDomainEvent(new AlquilerCanceladoDomainEvent(Id));
+
+        return Result.Success();
+
+    }
+
+    /// <summary>
+    /// Completa un alquiler previamente confirmado, cambiando su estado a <see cref="AlquilerStatus.Completado"/>.
+    /// Solo se puede completar si el alquiler está actualmente en estado <see cref="AlquilerStatus.Confirmado"/>.
+    /// Si el estado no es válido, retorna un error.
+    /// </summary>
+    /// <param name="utcNow">
+    /// Fecha y hora actual en formato UTC, usada para registrar el momento de la finalización del alquiler.
+    /// </param>
+    /// <returns>
+    /// Un resultado (<see cref="Result"/>) que indica si la operación fue exitosa.
+    /// Retorna <c>Result.Success()</c> si la finalización es válida,
+    /// o un <c>Result.Failure()</c> con <see cref="AlquilerErrors.NotConfirmed"/> si no es posible completar.
+    /// </returns>
+
+    public Result Completar(DateTime utcNow)
+    {
+        if (Status != AlquilerStatus.Confirmado)
+        {
+            return Result.Failure(AlquilerErrors.NotConfirmed);
+
+        }
+
+        Status = AlquilerStatus.Completado;
+        FechaCompletado = utcNow;
+        RaiseDomainEvent(new AlquilerCompletadoDomainEvent(Id));
 
         return Result.Success();
 
