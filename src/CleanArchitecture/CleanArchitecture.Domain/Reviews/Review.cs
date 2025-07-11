@@ -6,7 +6,7 @@ namespace CleanArchitecture.Domain.Reviews;
 
 /// <summary>
 /// Representa una reseña o calificación realizada por un usuario sobre un alquiler completado.
-/// Incluye información sobre el vehículo, el usuario, la puntuación, el comentario y la fecha de creación.
+/// Incluye información sobre el vehículo, el usuario, la puntuación (como objeto de valor), el comentario (como objeto de valor) y la fecha de creación.
 /// </summary>
 public sealed class Review : Entity
 {
@@ -18,8 +18,8 @@ public sealed class Review : Entity
         Guid vehiculoId,
         Guid alquilerId,
         Guid userId,
-        int raiting,
-        string comentario,
+        Raiting raiting,
+        Comentario comentario,
         DateTime fechaCreacion) : base(id)
     {
         VehiculoId = vehiculoId;
@@ -46,14 +46,14 @@ public sealed class Review : Entity
     public Guid UserId { get; private set; }
 
     /// <summary>
-    /// Calificación dada al vehículo o al servicio, en formato numérico.
+    /// Calificación otorgada al vehículo o al servicio, representada como objeto de valor <see cref="Raiting"/>.
     /// </summary>
-    public int Raiting { get; private set; }
+    public Raiting Raiting { get; private set; }
 
     /// <summary>
-    /// Comentario opcional adicional proporcionado por el usuario.
+    /// Comentario adicional proporcionado por el usuario, representado como objeto de valor <see cref="Comentario"/>.
     /// </summary>
-    public string? Comentario { get; private set; }
+    public Comentario? Comentario { get; private set; }
 
     /// <summary>
     /// Fecha en la que se creó la reseña.
@@ -66,17 +66,17 @@ public sealed class Review : Entity
     /// Dispara un evento de dominio al ser creada.
     /// </summary>
     /// <param name="alquiler">Instancia del alquiler sobre la que se realiza la reseña.</param>
-    /// <param name="raiting">Puntuación otorgada por el usuario.</param>
-    /// <param name="comentario">Comentario adicional del usuario.</param>
+    /// <param name="raiting">Puntuación otorgada por el usuario como <see cref="Raiting"/>.</param>
+    /// <param name="comentario">Comentario adicional del usuario como <see cref="Comentario"/>.</param>
     /// <param name="fechaCreacion">Fecha y hora de creación de la reseña.</param>
     /// <returns>
-    /// Un resultado exitoso con la reseña creada si las validaciones son correctas, 
+    /// Un resultado exitoso con la reseña creada si las validaciones son correctas,
     /// o un <see cref="Result.Failure{T}"/> con <see cref="ReviewErrors.NotEligible"/> si el alquiler no es elegible.
     /// </returns>
     public static Result<Review> Create(
         Alquiler alquiler,
-        int raiting,
-        string comentario,
+        Raiting raiting,
+        Comentario comentario,
         DateTime fechaCreacion)
     {
         if (alquiler.Status != AlquilerStatus.Completado)
