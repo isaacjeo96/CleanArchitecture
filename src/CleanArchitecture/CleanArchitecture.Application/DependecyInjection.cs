@@ -1,3 +1,7 @@
+using Microsoft.Extensions.DependencyInjection; // Necesario para IServiceCollection
+using MediatR;                                  // Necesario para registrar MediatR
+using CleanArchitecture.Domain.Alquileres;     // Para poder registrar PrecioService
+
 namespace CleanArchitecture.Application;
 
 /// <summary>
@@ -19,19 +23,24 @@ public static class DependencyInjection
     /// </returns>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        // 👉 Registra todos los handlers de MediatR que estén en este ensamblado (Application)
+        // 🧩 Aquí empieza el registro de MediatR
         services.AddMediatR(configuration =>
         {
-            // ✅ Usa reflexión para buscar todas las clases que implementan interfaces de MediatR
-            // como IRequestHandler<T>, INotificationHandler<T>, etc.
+            // 📌 Este método indica a MediatR que busque en este ensamblado
+            // (Assembly) todos los handlers (clases que implementen IRequestHandler,
+            // INotificationHandler, etc.) para que los registre automáticamente.
+            // Eso permite que al hacer _mediator.Send(...) MediatR sepa qué clase manejará la petición.
             configuration.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
         });
 
-        // 👉 Registra el servicio PrecioService con un ciclo de vida Transient
-        // Esto significa que se creará una nueva instancia cada vez que se solicite
+        // 🧩 Aquí registramos PrecioService en el contenedor DI
+        // 👇 ¿Por qué Transient?
+        // Porque PrecioService es un servicio sin estado y queremos una nueva
+        // instancia cada vez que alguien la pida.
         services.AddTransient<PrecioService>();
 
-        // 🔁 Devuelve el contenedor ya modificado para que pueda seguir encadenándose si se desea
+        // 🧩 Finalmente, devolvemos el mismo IServiceCollection para que se puedan
+        // seguir encadenando más llamadas si se desea (patrón Fluent)
         return services;
     }
 }
