@@ -1,107 +1,102 @@
-using CleanArchitecture.Application.Abstractions.Messaging; // Interfaces CQRS (ICommandHandler)
-using CleanArchitecture.Domain.Abstractions;               // Result, IUnitOfWork (aquí está tu IUniteOfWork)
-using CleanArchitecture.Domain.Alquileres;                 // Entidad Alquiler, DateRange, AlquilerErrors, PrecioService
-using CleanArchitecture.Domain.Users;                      // IUserRepository, UserErrors
-using CleanArchitecture.Domain.Vehiculos;                  // IVehiculoRepository, VehiculoErrors
+using CleanArchitecture.Application.Abstractions.Clock;           // Proveedor de fecha/hora (abstracción)
+using CleanArchitecture.Application.Abstractions.Messaging;      // Interfaces CQRS (ICommandHandler)
+using CleanArchitecture.Domain.Abstractions;                     // Result, IUnitOfWork
+using CleanArchitecture.Domain.Alquileres;                       // Entidad Alquiler, DateRange, AlquilerErrors, PrecioService
+using CleanArchitecture.Domain.Users;                            // IUserRepository, UserErrors
+using CleanArchitecture.Domain.Vehiculos;                        // IVehiculoRepository, VehiculoErrors
 
-namespace CleanArchitecture.Application.Alquileres.ReservarAlquiler;
-
-/// <summary>
-/// Handler (manejador) del comando <see cref="ReservarAlquilerCommand"/>.
-/// Orquesta el caso de uso "reservar un alquiler":
-/// 1) Valida existencia de usuario y vehículo.
-/// 2) Valida disponibilidad (no solapamiento).
-/// 3) Crea la reserva mediante la entidad de dominio.
-/// 4) Persiste cambios vía repositorio + Unit of Work.
-/// Devuelve el <c>Guid</c> del alquiler creado si todo es correcto.
-/// </summary>
-internal sealed class ReservarAlquilerCommandHandler : ICommandHandler<ReservarAlquilerCommand, Guid>
+namespace CleanArchitecture.Application.Alquileres.ReservarAlquiler
 {
-    // Dependencias necesarias para resolver el caso de uso (inyección de dependencias).
-    private readonly IUserRepository _userRepository;           // Acceso/lectura de usuarios
-    private readonly IVehiculoRepository _vehiculoRepository;   // Acceso/lectura de vehículos
-    private readonly IAlquilerRepository _alquilerRepository;   // Persistencia/consultas de alquileres
-    private readonly PrecioService _precioService;              // Lógica de cálculo de precio (servicio de dominio)
-    private readonly IUniteOfWork _uniteOfWork;                 // Confirmación atómica de cambios (transacción)
-
     /// <summary>
-    /// Constructor con inyección de dependencias.
+    /// Handler que procesa el comando <see cref="ReservarAlquilerCommand"/>.
+    /// Orquesta el flujo de reservar un alquiler:
+    /// 1) Verifica que el usuario y el vehículo existen.
+    /// 2) Valida que el vehículo esté disponible en el rango de fechas.
+    /// 3) Crea la reserva utilizando la lógica del dominio.
+    /// 4) Persiste los cambios usando el patrón Unit of Work.
+    /// Retorna el <c>Guid</c> del nuevo alquiler si la operación es exitosa.
     /// </summary>
-    public ReservarAlquilerCommandHandler(
-        IUserRepository userRepository,
-        IVehiculoRepository vehiculoRepository,
-        IAlquilerRepository alquilerRepository,
-        PrecioService precioService,
-        IUniteOfWork uniteOfWork)
+    internal sealed class ReservarAlquilerCommandHandler : ICommandHandler<ReservarAlquilerCommand, Guid>
     {
-        _userRepository = userRepository;             // Guarda repo de usuarios
-        _vehiculoRepository = vehiculoRepository;     // Guarda repo de vehículos
-        _alquilerRepository = alquilerRepository;     // Guarda repo de alquileres
-        _precioService = precioService;               // Guarda servicio de precios
-        _uniteOfWork = uniteOfWork;                   // Guarda unidad de trabajo
-    }
+        // --- Dependencias inyectadas ---
+        private readonly IUserRepository _userRepository;           // Acceso y gestión de usuarios
+        private readonly IVehiculoRepository _vehiculoRepository;   // Acceso y gestión de vehículos
+        private readonly IAlquilerRepository _alquilerRepository;   // Acceso y gestión de alquileres
+        private readonly PrecioService _precioService;              // Cálculo de precios
+        private readonly IUniteOfWork _uniteOfWork;                  // Transacción atómica
+        private readonly IDateTimeProvider _dateTimeProvider;       // Fecha/hora actual
 
-    /// <summary>
-    /// Maneja el comando de reserva. Aplica validaciones de negocio y persiste el resultado.
-    /// </summary>
-    /// <param name="request">Datos de la reserva: vehículo, usuario y fechas.</param>
-    /// <param name="cancellationToken">Token para cancelar la operación.</param>
-    /// <returns>
-    /// <see cref="Result{T}"/> con el <c>Guid</c> del alquiler creado en caso de éxito;
-    /// o <c>Result.Failure</c> con el error de dominio correspondiente.
-    /// </returns>
-    public async Task<Result<Guid>> Handle(
-        ReservarAlquilerCommand request,
-        CancellationToken cancellationToken)
-    {
-        // 1) Validar que el usuario exista
-        var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
-
-        if (user is null)
+        /// <summary>
+        /// Constructor que recibe todas las dependencias necesarias para ejecutar el caso de uso.
+        /// </summary>
+        public ReservarAlquilerCommandHandler(
+            IUserRepository userRepository,
+            IVehiculoRepository vehiculoRepository,
+            IAlquilerRepository alquilerRepository,
+            PrecioService precioService,
+            IUniteOfWork uniteOfWork,
+            IDateTimeProvider dateTimeProvider)
         {
-            // Si no existe, devolvemos fallo con el error de dominio apropiado
-            // (nota: en tu código está como UserErros.NotFound; idealmente UserErrors.NotFound)
-            return Result.Failure<Guid>(UserErros.NotFound);
+            _userRepository = userRepository;
+            _vehiculoRepository = vehiculoRepository;
+            _alquilerRepository = alquilerRepository;
+            _precioService = precioService;
+            _uniteOfWork = uniteOfWork;
+            _dateTimeProvider = dateTimeProvider;
         }
 
-        // 2) Validar que el vehículo exista
-        var vehiculo = await _vehiculoRepository.GetByIdAsync(request.VehiculoId, cancellationToken);
-
-        if (vehiculo is null)
+        /// <summary>
+        /// Ejecuta el comando para reservar un alquiler, aplicando validaciones de negocio y registrando la reserva.
+        /// </summary>
+        /// <param name="request">Datos de la solicitud de reserva.</param>
+        /// <param name="cancellationToken">Token para cancelar la operación si es necesario.</param>
+        /// <returns>
+        /// Un <see cref="Result{Guid}"/> con el identificador del nuevo alquiler si es exitoso,
+        /// o un error de dominio si falla alguna validación.
+        /// </returns>
+        public async Task<Result<Guid>> Handle(
+            ReservarAlquilerCommand request,
+            CancellationToken cancellationToken)
         {
-            // Si no existe, devolvemos el error de dominio correspondiente
-            return Result.Failure<Guid>(VehiculoErrors.NotFound);
+            // 1) Verificar que el usuario existe
+            var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
+            if (user is null)
+            {
+                return Result.Failure<Guid>(UserErros.NotFound);
+            }
+
+            // 2) Verificar que el vehículo existe
+            var vehiculo = await _vehiculoRepository.GetByIdAsync(request.VehiculoId, cancellationToken);
+            if (vehiculo is null)
+            {
+                return Result.Failure<Guid>(VehiculoErrors.NotFound);
+            }
+
+            // 3) Crear el rango de fechas del alquiler (valida que inicio <= fin)
+            var duracion = DateRange.Create(request.FechaInicio, request.FechaFin);
+
+            // 4) Validar que no haya otra reserva en el mismo período
+            if (await _alquilerRepository.IsOverlappingAsync(vehiculo, duracion, cancellationToken))
+            {
+                return Result.Failure<Guid>(AlquilerErrors.Overlap);
+            }
+
+            // 5) Crear la reserva desde el dominio
+            var alquier = Alquiler.Reservar(
+                vehiculo,
+                user.Id,
+                duracion,
+                _dateTimeProvider.currenTime, // Usamos proveedor de fecha/hora
+                _precioService);
+
+            // 6) Agregar la nueva reserva al repositorio
+            _alquilerRepository.Add(alquier);
+
+            // 7) Guardar todos los cambios de forma atómica
+            await _uniteOfWork.SaveChangesAsync(cancellationToken);
+
+            // 8) Devolver el identificador del alquiler creado
+            return alquier.Id;
         }
-
-        // 3) Crear el objeto de valor para la duración (valida inicio/fin)
-        var duracion = DateRange.Create(request.FechaInicio, request.FechaFin);
-
-        // 4) Verificar solapamiento: si hay otra reserva para el mismo vehículo/periodo
-        if (await _alquilerRepository.IsOverlappingAsync(vehiculo, duracion, cancellationToken))
-        {
-            // Si hay solape, regresamos error del dominio
-            return Result.Failure<Guid>(AlquilerErrors.Overlap);
-        }
-
-        // 5) Crear la reserva desde el dominio (método de fábrica)
-        //    - Calcula precios con PrecioService
-        //    - Deja estado en Reservado
-        //    - Dispara evento de dominio AlquilerReservadoDomainEvent
-        var alquier = Alquiler.Reservar(
-            vehiculo,
-            user.Id,
-            duracion,
-            DateTime.UtcNow,   // Siempre en UTC para consistencia
-            _precioService);
-
-        // 6) Registrar la nueva reserva para persistir
-        _alquilerRepository.Add(alquier);
-
-        // 7) Confirmar cambios en una sola transacción
-        await _uniteOfWork.SaveChangesAsync(cancellationToken);
-
-        // 8) Devolver el Id generado del alquiler (implicit cast a Result<Guid> si lo tienes definido;
-        //    si no, sería: Result.Success(alquier.Id))
-        return alquier.Id;
     }
 }
