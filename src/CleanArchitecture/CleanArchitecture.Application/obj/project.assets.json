@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     "net8.0": {
+      "Dapper/2.1.15": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Dapper.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Dapper.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "MediatR/12.1.1": {
         "type": "package",
         "dependencies": {
@@ -64,6 +77,25 @@
     }
   },
   "libraries": {
+    "Dapper/2.1.15": {
+      "sha512": "1aWSAosZymEM+mRwfrXteRIN74/JTUjqj9B/KqEbanH6vfUKy9D9cemRN0q1ZOEfSB7d1PpFTpVOCbf2Uv70Og==",
+      "type": "package",
+      "path": "dapper/2.1.15",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Dapper.png",
+        "dapper.2.1.15.nupkg.sha512",
+        "dapper.nuspec",
+        "lib/net461/Dapper.dll",
+        "lib/net461/Dapper.xml",
+        "lib/net5.0/Dapper.dll",
+        "lib/net5.0/Dapper.xml",
+        "lib/netstandard2.0/Dapper.dll",
+        "lib/netstandard2.0/Dapper.xml",
+        "readme.md"
+      ]
+    },
     "MediatR/12.1.1": {
       "sha512": "1AbwzzeS6gn4NdcO6A9LfKS5TXXgAiUQM3J18dREHa7O7TrdCXJ5dNFeRBpzPZY7UWl5Kby+n9pWrPJe3SDiMA==",
       "type": "package",
@@ -133,6 +165,7 @@
   "projectFileDependencyGroups": {
     "net8.0": [
       "CleanArchitecture.Domain >= 1.0.0",
+      "Dapper >= 2.1.15",
       "MediatR >= 12.1.1",
       "Microsoft.Extensions.DependencyInjection.Abstractions >= 9.0.7"
     ]
@@ -144,11 +177,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\CleanArchitecture.Application.csproj",
+      "projectUniqueName": "c:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\CleanArchitecture.Application.csproj",
       "projectName": "CleanArchitecture.Application",
-      "projectPath": "C:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\CleanArchitecture.Application.csproj",
+      "projectPath": "c:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\CleanArchitecture.Application.csproj",
       "packagesPath": "C:\\Users\\ijespinoza\\.nuget\\packages\\",
-      "outputPath": "C:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\obj\\",
+      "outputPath": "c:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -170,8 +203,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Domain\\CleanArchitecture.Domain.csproj": {
-              "projectPath": "C:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Domain\\CleanArchitecture.Domain.csproj"
+            "c:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Domain\\CleanArchitecture.Domain.csproj": {
+              "projectPath": "c:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Domain\\CleanArchitecture.Domain.csproj"
             }
           }
         }
@@ -186,6 +219,10 @@
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
+          "Dapper": {
+            "target": "Package",
+            "version": "[2.1.15, )"
+          },
           "MediatR": {
             "target": "Package",
             "version": "[12.1.1, )"

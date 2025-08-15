@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "v1plOplPh4IHPnNkkh5DJFfcMFq6D2ZlQJaagDyVEVBIC4Tp5ISDw+yFsGshGh5Wa2nZNeOgTsBmWzjN7NGgCA==",
+  "dgSpecHash": "E3APEBlCeIF952VFwRTNXT6YuyiifYuGFMhJ1YCDJtvVCJ6dJBNTrobfsz4tpkTDSjvs57HK1AbUhnAsoaDCVw==",
   "success": true,
-  "projectFilePath": "C:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\CleanArchitecture.Application.csproj",
+  "projectFilePath": "c:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\CleanArchitecture.Application.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\ijespinoza\\.nuget\\packages\\dapper\\2.1.15\\dapper.2.1.15.nupkg.sha512",
     "C:\\Users\\ijespinoza\\.nuget\\packages\\mediatr\\12.1.1\\mediatr.12.1.1.nupkg.sha512",
     "C:\\Users\\ijespinoza\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
     "C:\\Users\\ijespinoza\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.7\\microsoft.extensions.dependencyinjection.abstractions.9.0.7.nupkg.sha512"
