@@ -1,13 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "E3APEBlCeIF952VFwRTNXT6YuyiifYuGFMhJ1YCDJtvVCJ6dJBNTrobfsz4tpkTDSjvs57HK1AbUhnAsoaDCVw==",
+  "dgSpecHash": "yvS8Fx4BRGFpOJgEj5k98M7jZ2u2RPWtmu5g/08+ejCAQMDN1mM+2VTZtAb2twUmYL//Hp3Eo8pr/lcd2tr7pA==",
   "success": true,
   "projectFilePath": "c:\\CleanArchitecture\\src\\CleanArchitecture\\CleanArchitecture.Application\\CleanArchitecture.Application.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ijespinoza\\.nuget\\packages\\dapper\\2.1.15\\dapper.2.1.15.nupkg.sha512",
     "C:\\Users\\ijespinoza\\.nuget\\packages\\mediatr\\12.1.1\\mediatr.12.1.1.nupkg.sha512",
     "C:\\Users\\ijespinoza\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
-    "C:\\Users\\ijespinoza\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.7\\microsoft.extensions.dependencyinjection.abstractions.9.0.7.nupkg.sha512"
+    "C:\\Users\\ijespinoza\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.7\\microsoft.extensions.dependencyinjection.abstractions.9.0.7.nupkg.sha512",
+    "C:\\Users\\ijespinoza\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.0-rc.2.23479.6\\microsoft.extensions.logging.abstractions.8.0.0-rc.2.23479.6.nupkg.sha512"
   ],
   "logs": []
 }
